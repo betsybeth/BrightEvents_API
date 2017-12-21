@@ -7,7 +7,11 @@ db = SQLAlchemy()
 
 
 def create_app(config_name):
+<<<<<<< HEAD
     """Creates flask api app."""
+=======
+    """Creates flask api app"""
+>>>>>>> 71a7531a17d59dc94c64fb6894f0fc03bebddfc7
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_configuration[config_name])
     app.config.from_pyfile("config.py")
