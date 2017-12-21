@@ -4,6 +4,7 @@ BrightEvents_API lets you create, update, delete events.
 #### Introduction
  Bright Events API has database for persistance data.
 
+
 #### Getting started
 * To start using BrightEvent_API; git clone`https://github.com/betsybeth/BrightEvents_API.git`
 * change directory to `cd BrightEvents_API`
