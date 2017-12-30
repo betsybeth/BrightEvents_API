@@ -6,7 +6,7 @@ from app.models import User
 auth_blueprint = Blueprint('auth', __name__)
 
 
-class Register(MethodView)
+class Register(MethodView):
     """Register class handles authenication."""
 
     def post(self):
@@ -91,26 +91,26 @@ class Logout(MethodView):
 class ResetPassword(MethodView):
     """ResetPassword class handles resetting password."""
 
-        def post(self):
-            """Resets user password"""
-            json_dict = request.get_json()
-            email = json_dict.get('email')
-            new_password = json_dict.get('new_password')
-            user = User.query.filter_by(email=email).first()
-            if user:
-                user.password = generate_password_hash(new_password)
-                user.save_user()
-                response = {
-                    "message": 'Password reset successful',
-                    'new password': new_password
-                }
-                return make_response(jsonify(response)), 201
-            response = {'message': 'Invalid email'}
-            return make_response(jsonify(response)), 400
+    def post(self):
+        """Resets user password"""
+        json_dict = request.get_json()
+        email = json_dict.get('email')
+        new_password = json_dict.get('new_password')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.password = generate_password_hash(new_password)
+            user.save_user()
+            response = {
+                "message": 'Password reset successful',
+                'new password': new_password
+            }
+            return make_response(jsonify(response)), 201
+        response = {'message': 'Invalid email'}
+        return make_response(jsonify(response)), 400
 
 
 class ChangePassword(MethodView):
-    """ChangePassword class handles an changing password.""""
+    """Change Password class handles an changing password."""
 
     def post(self):
         """change an existing password to a rememberable password."""
