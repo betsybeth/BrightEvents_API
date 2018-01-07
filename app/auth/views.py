@@ -24,7 +24,7 @@ class Register(MethodView):
 
                 if len(password) < 8:
                     response = {
-                        'message': 'email too short'
+                        'message': 'password  too short'
                     }
                     return make_response(jsonify(response)), 400
                 user = User.query.filter_by(email=email).first()
