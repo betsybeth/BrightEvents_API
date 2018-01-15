@@ -1,3 +1,5 @@
-*.env
+.env
 *.pyc
 .ropeproject/config.py
+*migrations/
+.coverage
