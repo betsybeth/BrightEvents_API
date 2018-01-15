@@ -13,7 +13,6 @@ env:
     - export DATABASE_URL="postgresql://postgres:postgres@localhost/test_db"
 before_script:
   - createdb test_db
-  - python manage.py db init
   - python manage.py db migrate
   - python manage.py db upgrade
 after_success:
