@@ -11,7 +11,8 @@ env:
     - export SECRET="it_is_awesome"
     - export APP_SETTINGS="development"
     - export DATABASE_URL="postgresql://postgres:postgres@localhost/test_db"
-
+before_script:
+  - psql -c "CREATE DATABASE test_db;" -U postgres
 after_success:
   coveralls
 script:
