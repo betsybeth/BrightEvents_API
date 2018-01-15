@@ -11,12 +11,8 @@ env:
     - export SECRET="it_is_awesome"
     - export APP_SETTINGS="development"
     - export DATABASE_URL="postgresql://postgres:postgres@localhost/test_db"
-# before_script:
-#   - createdb test_db
-#   - python manage.py db migrate
-#   - python manage.py db upgrade
+
 after_success:
   coveralls
 script:
-- nosetests tests/
 - nosetests  --with-coverage --cover-package=app
