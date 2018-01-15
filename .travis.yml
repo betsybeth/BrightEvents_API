@@ -2,7 +2,18 @@ language: python
 python:
   - 3.6.1
 install:
-  - pip install -r requirements.txt
-script: nosetests --with-coverage --cover-package=app && coverage report
+  - "pip install -r requirements.txt"
+  - "pip install coveralls"
+services:
+  - postgresql
+env:
+  global:
+    - export SECRET="it_is_awesome"
+    - export APP_SETTINGS="development"
+    - export DATABASE_URL="postgresql://postgres:postgres@localhost/test_db"
+before_script:
+  - psql -c "CREATE DATABASE test_db;" -U postgres
 after_success:
-  - coveralls
+  coveralls
+script:
+- nosetests  --with-coverage --cover-package=app

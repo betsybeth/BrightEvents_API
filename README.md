@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/betsybeth/BrightEvents_API.svg?branch=develop)](https://travis-ci.org/betsybeth/BrightEvents_API)
+[![Coverage Status](https://coveralls.io/repos/github/betsybeth/BrightEvents_API/badge.svg?branch=develop)](https://coveralls.io/github/betsybeth/BrightEvents_API?branch=develop)
 # BrightEvents_API
 BrightEvents_API lets you create, update, delete events.
 
