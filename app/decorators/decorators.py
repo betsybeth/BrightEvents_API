@@ -1,6 +1,7 @@
-from flask import request , jsonify, make_response
+from flask import request, jsonify, make_response
 from functools import wraps
 from app.models import User
+
 
 def login_required(func):
     """It modifyies the authenication token function in the database models."""
@@ -12,8 +13,8 @@ def login_required(func):
             if not isinstance(kwargs['user_id'], int):
                 message = kwargs['user_id']
                 response = {
-                    'message':message
-                    }
+                    'message': message
+                }
                 return make_response(jsonify(response)), 401
         else:
             response = {
