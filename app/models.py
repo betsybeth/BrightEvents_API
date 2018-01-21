@@ -13,7 +13,7 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), unique=True)
+    name = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     events = db.relationship(
@@ -46,9 +46,7 @@ class User(db.Model):
             }
 
             jwt_string = jwt.encode(
-                payload,
-                current_app.config['SECRET'],
-                algorithm='HS256')
+                payload, current_app.config['SECRET'], algorithm='HS256')
             return jwt_string
         except Exception as e:
             return str(e)
@@ -58,6 +56,9 @@ class User(db.Model):
         """Decodes a token and return String|Integer."""
         try:
             payload = jwt.decode(token_auth, current_app.config['SECRET'])
+            blacklisted_token = BlackList.check_token(token_auth)
+            if blacklisted_token:
+                return 'Token blacklisted. Please log in again.'
             return payload['sub']
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
@@ -103,6 +104,7 @@ class Event(db.Model):
         """Addes an event and stores it in the database."""
         db.session.add(self)
         db.session.commit()
+
     @staticmethod
     def exist_event(user_id, name):
         """Checks if an exist exists."""
@@ -111,12 +113,10 @@ class Event(db.Model):
             return True
         return False
 
-
     @staticmethod
     def get_all_event(user_id):
         """Gets all the events according to a particular user."""
         return Event.query.filter_by(author=user_id).all()
-
 
     def delete_event(self):
         """Deletes an event."""
@@ -126,7 +126,7 @@ class Event(db.Model):
     def serialize(self):
         """Returns the event as a dictionary."""
         return {
-            'id':self.id,
+            'id': self.id,
             'name': self.name,
             'description': self.description,
             'category': self.category,
@@ -141,7 +141,7 @@ class Rsvp(db.Model):
     __tablename__ = "rsvps"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, unique=True)
+    name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     phone_no = db.Column(db.Integer, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey(Event.id))
@@ -152,19 +152,12 @@ class Rsvp(db.Model):
         self.email = email
         self.phone_no = phone_no
         self.event_id = event_id
-        self.category  = category
+        self.category = category
 
     def save_rsvp(self):
         """Adds a rsvp to the database"""
         db.session.add(self)
         db.session.commit()
-
-    @staticmethod
-    def exist_rsvp(rsvp_id, name):
-        rsvp = Rsvp.query.filter_by(rsvp_id=rsvp_id).first()
-        if rsvp:
-            return True
-        return False
 
     @staticmethod
     def get_all_rsvp(event_id):
@@ -179,10 +172,42 @@ class Rsvp(db.Model):
     def serialize(self):
         """Returns the rsvp as a dictionary."""
         return {
-            'id':self.id,
+            'id': self.id,
             'name': self.name,
             'email': self.email,
             'phone_no': self.phone_no,
-            'category':self.category,
-            'event_id':self.event_id
-            }
+            'category': self.category,
+            'event_id': self.event_id
+        }
+
+
+class BlackList(db.Model):
+    """Class that handles blacklisting of tokens."""
+    __tablename__ = "blacklist_token"
+
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisted_on = db.Column(
+        db.DateTime, default=datetime.now, nullable=False)
+
+    def __init__(self, token):
+        self.token = token
+        self.blacklisted_on = datetime.now()
+
+    def save_token(self):
+        """Saves the token to the database."""
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def check_token(auth_token):
+        blacklist_token = BlackList.query.filter_by(
+            token=str(auth_token)).first()
+        if blacklist_token:
+            return True
+
+        return False
+
+    def serialize(self):
+        """Returns the token as a dictionary."""
+        return {'token': self.token, 'blacklisted_no': self.blacklisted_on}

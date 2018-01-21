@@ -1,8 +1,10 @@
+import re
 from flask.views import MethodView
 from flask import Blueprint, make_response, request, jsonify
 from werkzeug.security import generate_password_hash
 from app.decorators.decorators import login_required
 from app.models import User
+from app.models import BlackList
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -17,14 +19,24 @@ class Register(MethodView):
         email = json_dict.get('email')
         password = json_dict.get('password')
         if name and email and password:
+            if name.isdigit():
+                response = {'message': "name cannot be integer"}
+                return make_response(jsonify(response)), 400
             if User.validate_email(email):
-
-                if name.strip() == "":
-                    response = {'message': "invalid name"}
+                if len(name.strip()) < 3:
+                    response = {'message': "name cannot be empty"}
                     return make_response(jsonify(response)), 400
-
+                if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
+                            name):
+                    response = {
+                        'message': "name should not have special characters"
+                    }
+                    return make_response(jsonify(response)), 400
+                if len(password.strip()) < 3:
+                    response = {'message': "password cannot be empty"}
+                    return make_response(jsonify(response)), 400
                 if len(password) < 8:
-                    response = {'message': 'password  too short'}
+                    response = {'message': "password is too short"}
                     return make_response(jsonify(response)), 400
                 user = User.query.filter_by(email=email).first()
                 if user:
@@ -40,10 +52,7 @@ class Register(MethodView):
                     'token': token_.decode()
                 }
                 return make_response(jsonify(response)), 201
-            return make_response(
-                jsonify({
-                    'message': 'invalid name or email'
-                })), 400
+            return make_response(jsonify({'message': 'invalid email'})), 400
         return make_response(jsonify({'message': 'empty inputs'})), 400
 
 
@@ -75,15 +84,26 @@ class Login(MethodView):
 class Logout(MethodView):
     """Logout class"""
 
-    @login_required
-    def post(self, user_id):
+    def post(self):
         """Logout a registered user."""
         auth_token = request.headers.get('Authorization')
         if auth_token:
             resp = User.decoding_token(auth_token)
-            return make_response(jsonify({
-                'message': 'successfully logout'
-            })), 200
+            if not isinstance(resp, str):
+                blacklist_token = BlackList(token=auth_token)
+                try:
+                    blacklist_token.save_token()
+                    return make_response(
+                        jsonify({
+                            'message': 'successfully logout'
+                        })), 200
+                except Exception as e:
+                    return make_response(jsonify({"message": e})), 400
+            return make_response(jsonify({"message": resp})), 404
+        return make_response(
+            jsonify({
+                "message": "Please provide a valid token"
+            })), 403
 
 
 class ResetPassword(MethodView):
@@ -94,6 +114,9 @@ class ResetPassword(MethodView):
         json_dict = request.get_json()
         email = json_dict.get('email')
         new_password = json_dict.get('new_password')
+        if len(new_password.strip()) < 3:
+            response = {'message': "password cannot be empty"}
+            return make_response(jsonify(response)), 400
         if len(new_password) < 8:
             response = {'message': 'password  too short'}
             return make_response(jsonify(response)), 400
@@ -123,6 +146,12 @@ class ChangePassword(MethodView):
         confirm_password = json_dict.get('confirm_password')
         user = User.query.filter_by(id=user_id).first()
         if old_password and user.validate_password(old_password):
+            if len(new_password.strip()) < 3:
+                response = {'message': "password cannot be empty"}
+                return make_response(jsonify(response)), 400
+            if len(new_password) < 8:
+                response = {'message': "password is too short"}
+                return make_response(jsonify(response)), 400
             if new_password == confirm_password:
                 user.password = generate_password_hash(new_password)
                 user.save_user()

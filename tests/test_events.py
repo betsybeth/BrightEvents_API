@@ -56,6 +56,165 @@ class TestEvents(TestCase):
             })
         self.assertEqual(result.status_code, 201)
 
+    def test_invalid_event_name(self):
+        """Test if event name has special characters used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': '##$$$'}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        res = self.client.post(
+            '/create_event',
+            data=json.dumps(self.event),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        response = self.client.put(
+            '/events/1/',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('name should not have special characters',
+                      str(result.data))
+        self.assertIn('name should not have special characters',
+                      str(response.data))
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_event_name_number(self):
+        """Test if event name has numbers used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': '12345'}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        res = self.client.post(
+            '/create_event',
+            data=json.dumps(self.event),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        response = self.client.put(
+            '/events/1/',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('Name cannot be Integer', str(result.data))
+        self.assertIn('Name cannot be Integer', str(response.data))
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_event_location(self):
+        """Test if event location has special characters used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': 'talanta', 'location': '##$$$'}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        res = self.client.post(
+            '/create_event',
+            data=json.dumps(self.event),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        response = self.client.put(
+            '/events/1/',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('location should not have special characters',
+                      str(result.data))
+        self.assertIn('location should not have special characters',
+                      str(response.data))
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_event_description_number(self):
+        """Test if event name has numbers used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': 'talanta', "description": '12346976'}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        res = self.client.post(
+            '/create_event',
+            data=json.dumps(self.event),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        response = self.client.put(
+            '/events/1/',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('Description cannot be Integer', str(result.data))
+        self.assertIn('Description cannot be Integer', str(response.data))
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_event_category(self):
+        """Test if event category has special characters used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': 'talanta', 'category': "asd$%@@@"}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('category should not have special characters',
+                      str(result.data))
+        self.assertEqual(result.status_code, 400)
+
+    def test_invalid_event_category_number(self):
+        """Test if event category has numbers used."""
+        self.registration()
+        token_ = json.loads(self.login().data.decode())['token']
+        event_details = {'name': 'talanta', "location": '12346976'}
+        result = self.client.post(
+            '/create_event',
+            data=json.dumps(event_details),
+            content_type='application/json',
+            headers={
+                'Authorization': token_
+            })
+        self.assertIn('Location cannot be Integer', str(result.data))
+        self.assertEqual(result.status_code, 400)
+
     def test_already_event_exist(self):
         """Test if event already exists."""
         self.registration()
@@ -86,27 +245,29 @@ class TestEvents(TestCase):
             '/events/2',
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertIn('Event not available', str(result.data))
         self.assertEqual(result.status_code, 404)
+
     def test_get_event_all(self):
         """Test if you can view all events"""
         self.registration()
         token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/create_event',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         res = self.client.get(
             '/events',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
 
         self.assertEqual(res.status_code, 200)
 
@@ -116,18 +277,18 @@ class TestEvents(TestCase):
         token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/create_event',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         result_in_json = json.loads(result.data.decode())
         res = self.client.get(
-            '/events/{}/'.format(
-                result_in_json['id']),
+            '/events/{}/'.format(result_in_json['id']),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(res.status_code, 200)
 
     def test_edit_event(self):
@@ -143,19 +304,19 @@ class TestEvents(TestCase):
         }
         result = self.client.post(
             '/create_event',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(result.status_code, 201)
         res = self.client.put(
             '/events/1/',
-            data=json.dumps(
-                self.new_data),
+            data=json.dumps(self.new_data),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(res.status_code, 200)
 
     def test_delete_event(self):
@@ -165,16 +326,17 @@ class TestEvents(TestCase):
         token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/create_event',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         res = self.client.delete(
             '/events/1/',
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(res.status_code, 200)
 
     def test_event_exist_after_delete(self):
@@ -184,20 +346,22 @@ class TestEvents(TestCase):
         token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/create_event',
-            data=json.dumps(
-                self.event),
+            data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         res = self.client.delete(
             '/events/1/',
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(res.status_code, 200)
         second_result = self.client.delete(
             '/events/1/',
             content_type='application/json',
             headers={
-                'Authorization': token_})
+                'Authorization': token_
+            })
         self.assertEqual(second_result.status_code, 404)

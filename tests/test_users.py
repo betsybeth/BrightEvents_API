@@ -1,6 +1,7 @@
 from unittest import TestCase
 from app import create_app
 from app.models import db
+from app.models import BlackList, User
 import json
 
 
@@ -98,7 +99,9 @@ class TestAuthenication(TestCase):
             '/login',
             data=json.dumps(user_details),
             content_type='application/json')
-        self.assertIn('you are not registered,please register', str(response.data))
+        self.assertIn(
+            'you are not registered,please register', str(
+                response.data))
         self.assertEqual(400, response.status_code)
 
     def test_change_password(self):
@@ -117,12 +120,13 @@ class TestAuthenication(TestCase):
         second_result = self.client.post(
             "/change-password",
             data=json.dumps(user_details),
-                headers={'Authorization': "{}".format(token_)},
+            headers={'Authorization': "{}".format(token_)},
             content_type='application/json')
         data = json.loads(second_result.data.decode())
 
         self.assertIn('password changed successfully', str(second_result.data))
         self.assertEqual(201, second_result.status_code)
+
     def test_invalid_password_in_change_password(self):
         """Test if old password is invalid."""
         result = self.client.post(
@@ -139,12 +143,13 @@ class TestAuthenication(TestCase):
         second_result = self.client.post(
             "/change-password",
             data=json.dumps(user_details),
-                headers={'Authorization': "{}".format(token_)},
+            headers={'Authorization': "{}".format(token_)},
             content_type='application/json')
         data = json.loads(second_result.data.decode())
 
         self.assertIn('invalid password', str(second_result.data))
         self.assertEqual(403, second_result.status_code)
+
     def test_password_are_equal(self):
         """Test if the new password is equal to the confirm password."""
         result = self.client.post(
@@ -161,12 +166,15 @@ class TestAuthenication(TestCase):
         second_result = self.client.post(
             "/change-password",
             data=json.dumps(user_details),
-                headers={'Authorization': "{}".format(token_)},
+            headers={'Authorization': "{}".format(token_)},
             content_type='application/json')
         data = json.loads(second_result.data.decode())
 
-        self.assertIn('new password  and confirm password should be equal', str(second_result.data))
+        self.assertIn(
+            'new password  and confirm password should be equal', str(
+                second_result.data))
         self.assertEqual(400, second_result.status_code)
+
     def test_logout_user(self):
         """Test if registered user can logout."""
         second_result = self.client.post(
@@ -194,6 +202,7 @@ class TestAuthenication(TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 201)
         self.assertIn('Password reset successful', str(res.data))
+
     def test_invalid_reset_email(self):
         """Test if a wrong email is used when resetting password."""
         self.test_user_registration()
