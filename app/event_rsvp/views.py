@@ -182,7 +182,7 @@ class Rsvps(MethodView):
         if name and name.isdigit():
             response = {'message': "name cannot be integer"}
             return make_response(jsonify(response)), 400
-        if len(name.strip()) < 3:
+        if name and len(name.strip()) < 3:
             response = {'message': "name cannot be empty"}
             return make_response(jsonify(response)), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
