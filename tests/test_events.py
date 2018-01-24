@@ -154,7 +154,7 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_description_number(self):
-        """Test if event name has numbers used."""
+        """Test if event description has numbers used."""
         self.registration()
         token_ = json.loads(self.login().data.decode())['token']
         event_details = {'name': 'talanta', "description": '12346976'}
@@ -200,8 +200,8 @@ class TestEvents(TestCase):
                       str(result.data))
         self.assertEqual(result.status_code, 400)
 
-    def test_invalid_event_category_number(self):
-        """Test if event category has numbers used."""
+    def test_invalid_event_location_number(self):
+        """Test if event location has numbers used."""
         self.registration()
         token_ = json.loads(self.login().data.decode())['token']
         event_details = {'name': 'talanta', "location": '12346976'}
