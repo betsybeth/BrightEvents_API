@@ -106,9 +106,9 @@ class Event(db.Model):
         db.session.commit()
 
     @staticmethod
-    def exist_event(user_id, name):
+    def exist_event(user_id, date):
         """Checks if an exist exists."""
-        event = Event.query.filter_by(author=user_id, name=name).first()
+        event = Event.query.filter_by(author=user_id, date=date).first()
         if event:
             return True
         return False

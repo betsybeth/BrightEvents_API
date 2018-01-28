@@ -3,7 +3,7 @@ from .auth.views import auth_blueprint
 from .events.views import event_blueprint
 from .event_rsvp.views import rsvp_blueprint
 from .error import not_found, not_allowed
-from .error import handle_server_error
+from .error import internal_server_error, bad_request
 from .models import db
 from flask_cors import CORS
 
@@ -22,7 +22,8 @@ def create_app(config_name):
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(event_blueprint)
     app.register_blueprint(rsvp_blueprint)
-    app.register_error_handler(500, handle_server_error )
+    app.register_error_handler(Exception, internal_server_error)
+    app.register_error_handler(400, bad_request)
     app.register_error_handler(404, not_found)
     app.register_error_handler(405, not_allowed)
     db.init_app(app)
