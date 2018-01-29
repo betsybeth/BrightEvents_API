@@ -1,7 +1,6 @@
 from unittest import TestCase
 from app import create_app
 from app.models import db
-from app.models import BlackList, User
 import json
 
 
