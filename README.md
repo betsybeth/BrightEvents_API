@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/betsybeth/BrightEvents_API.svg?branch=develop)](https://travis-ci.org/betsybeth/BrightEvents_API)
 [![Coverage Status](https://coveralls.io/repos/github/betsybeth/BrightEvents_API/badge.svg?branch=develop)](https://coveralls.io/github/betsybeth/BrightEvents_API?branch=develop)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/48a794b0171a4762a60132e3026d5879)](https://www.codacy.com/app/betsybeth/BrightEvents_API?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=betsybeth/BrightEvents_API&amp;utm_campaign=Badge_Grade)
+[![Code Health](https://landscape.io/github/betsybeth/BrightEvents_API/develop/landscape.svg?style=flat)](https://landscape.io/github/betsybeth/BrightEvents_API/develop)
+
 # BrightEvents_API
 BrightEvents_API lets you create, update, delete events.
 
