@@ -14,7 +14,7 @@ class Rsvps(MethodView):
     @login_required
     def post(self, id, user_id):
         """A user is able to create an rsvp of an event according to the event Id."""
-        event = Event.query.filter_by(id=id).first()
+        event = Event.query.filter_by(author=user_id, id=id).first()
         if not event:
             response = {'message': 'No event available'}
             return make_response(jsonify(response)), 404
