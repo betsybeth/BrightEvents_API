@@ -17,45 +17,54 @@ class Events(MethodView):
         name = json_dict.get('name')
         description = json_dict.get('description')
         category = json_dict.get('category')
-        date = json_dict.get('date')
+        date_of_event = json_dict.get('date_of_event')
         location = json_dict.get('location')
         if name and isinstance(name, int):
-            response = {'message': "name cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "name cannot be number"
+                })), 400
         if name and name.strip():
-            if Event.exist_event(user_id, date):
+            if Event.exist_event(user_id, date_of_event):
                 return make_response(
                     jsonify({
                         'message':
                         'Event already exists due to the same date'
                     })), 409
             if name.isdigit():
-                response = {'message': "name cannot be integer"}
-                return make_response(jsonify(response)), 400
-
+                return make_response(
+                    jsonify({
+                        'message': "name cannot be integer"
+                    })), 400
             if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                         str(name)):
-                response = {
-                    'message': "name should not have special characters"
-                }
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message':
+                        "name should not have special characters"
+                    })), 400
             if name and len(name.strip()) < 2:
                 return make_response(
                     jsonify({
                         'message': 'Name is too short'
                     })), 400
             if description and isinstance(description, int):
-                response = {'message': "description cannot be number"}
-                return make_response(jsonify(response)), 400
-            if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\'\"\{\}\[\]].*',
+                return make_response(
+                    jsonify({
+                        'message': "description cannot be number"
+                    })), 400
+            if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                         str(description)):
-                response = {
-                    'message': "description should not have special characters"
-                }
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message':
+                        "description should not have special characters"
+                    })), 400
             if description and len(description.strip()) < 3:
-                response = {'message': "description cannot be empty"}
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message': "description cannot be empty"
+                    })), 400
             if description and description.isdigit():
                 return make_response(
                     jsonify({
@@ -68,39 +77,49 @@ class Events(MethodView):
                         'Description should not be long, maximum 200 words'
                     })), 400
             if category and isinstance(category, int):
-                response = {'message': "category cannot be number"}
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message': "category cannot be number"
+                    })), 400
             if category and category.isdigit():
                 return make_response(
                     jsonify({
                         'message': 'Category cannot be Integer'
                     })), 400
             if category and len(category.strip()) < 3:
-                response = {'message': "category cannot be empty"}
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message': "category cannot be empty"
+                    })), 400
             if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                         str(category)):
-                response = {
-                    'message': "category should not have special characters"
-                }
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message':
+                        "category should not have special characters"
+                    })), 400
             elif category and len(category) > 20:
                 return make_response(
                     jsonify({
                         'message': 'Category too long, maximum 20 letters'
                     })), 400
             if location and isinstance(location, int):
-                response = {'message': "location cannot be number"}
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message': "location cannot be number"
+                    })), 400
             if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                         str(location)):
-                response = {
-                    'message': "location should not have special characters"
-                }
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message':
+                        "location should not have special characters"
+                    })), 400
             if location and len(location.strip()) < 3:
-                response = {'message': "location cannot be empty"}
-                return make_response(jsonify(response)), 400
+                return make_response(
+                    jsonify({
+                        'message': "location cannot be empty"
+                    })), 400
             if location and location.isdigit():
                 return make_response(
                     jsonify({
@@ -115,7 +134,7 @@ class Events(MethodView):
                 name=name,
                 description=description,
                 category=category,
-                date=date,
+                date_of_event=date_of_event,
                 author=user_id,
                 location=location)
             event.save_event()
@@ -124,7 +143,7 @@ class Events(MethodView):
                 'name': event.name,
                 'description': event.description,
                 'category': event.category,
-                'date': event.date,
+                'date_of_event': event.date_of_event,
                 'author': event.author,
                 'location': event.location,
                 'message': 'event successfully created'
@@ -153,18 +172,22 @@ class Events(MethodView):
             if location:
                 event = Event.query.filter_by(author=user_id).first()
                 if not event:
-                    response = {'message': 'Event is not available'}
-                    return make_response(jsonify(response)), 404
+                    return make_response(
+                        jsonify({
+                            'message': 'This event is not available'
+                        })), 404
                 events = Event.query.filter_by(author=user_id).filter(
                     Event.location.ilike(location))
                 result = []
-                result = [event.serialize() for event in events]
+                result = [evet.serialize() for evet in events]
                 return make_response(jsonify(result=result)), 200
             if q:
                 event = Event.query.filter_by(author=user_id).first()
                 if not event:
-                    response = {'message': 'Event is not available'}
-                    return make_response(jsonify(response)), 404
+                    return make_response(
+                        jsonify({
+                            'message': 'This event is not available'
+                        })), 404
                 events = Event.query.filter_by(author=user_id).filter(
                     Event.name.ilike("%" + q + "%"))
                 results = []
@@ -174,7 +197,7 @@ class Events(MethodView):
                         'name': event.name,
                         'description': event.description,
                         'category': event.category,
-                        'date': event.date,
+                        'date': event.date_of_event,
                         'author': event.author,
                         'location': event.location,
                     }
@@ -193,22 +216,34 @@ class Events(MethodView):
                 if events.has_next:
                     next_page = '/events/?limit={}&page={}'.format(
                         limit, events.next_num)
-                result = []
-                result = [event.serialize() for event in events.items]
+                results = []
+                for event in events.items:
+                    event_found = {
+                        'id': event.id,
+                        'name': event.name,
+                        'description': event.description,
+                        'category': event.category,
+                        'date': event.date_of_event,
+                        'author': event.author,
+                        'location': event.location,
+                    }
+
+                    results.append(event_found)
                 return make_response(
                     jsonify(
-                        result=result,
+                        results=results,
                         prev_page=prev_page,
                         next_page=next_page,
                         pages=pages)), 200
         else:
             event = Event.query.filter_by(id=id).first()
             if not event:
-                response = {'message': 'Event not available'}
-                return make_response(jsonify(response)), 404
-            else:
-                response = event.serialize()
-                return make_response(jsonify(response)), 200
+                return make_response(
+                    jsonify({
+                        'message': 'This event is not available'
+                    })), 404
+            response = event.serialize()
+            return make_response(jsonify(response)), 200
 
     @login_required
     def put(self, id, user_id):
@@ -218,41 +253,53 @@ class Events(MethodView):
         name = json_dict.get('name')
         description = json_dict.get('description')
         category = json_dict.get('category')
-        date = json_dict.get('date')
+        date_of_event = json_dict.get('date_of_event')
         location = json_dict.get('location')
         if not event:
-            response = {'message': 'no event available'}
-            return make_response(jsonify(response)), 404
+            return make_response(
+                jsonify({
+                    'message': 'This event is not available'
+                })), 404
         if name and isinstance(name, int):
-            response = {'message': "name cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "name cannot be number"
+                })), 400
         if name and name.isdigit():
             return make_response(
                 jsonify({
                     'message': 'Name cannot be Integer'
                 })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "name should not have special characters"
+                })), 400
         if len(name.strip()) < 3:
-            response = {'message': "name cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(jsonify({
+                'message': "name cannot be empty"
+            })), 400
         if name and len(name.strip()) < 2:
             return make_response(jsonify({
                 'message': 'Name is too short'
             })), 400
         if description and isinstance(description, int):
-            response = {'message': "description cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "description cannot be number"
+                })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\'\"\{\}\[\]].*',
                     str(description)):
-            response = {
-                'message': "description should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message':
+                    "description should not have special characters"
+                })), 400
         if description and len(description.strip()) < 3:
-            response = {'message': "description cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "description cannot be empty"
+                })), 400
         if description and description.isdigit():
             return make_response(
                 jsonify({
@@ -265,11 +312,15 @@ class Events(MethodView):
                     'Description should not be long, maximum 200 words'
                 })), 400
         if category and isinstance(category, int):
-            response = {'message': "category cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "category cannot be number"
+                })), 400
         if category and len(category.strip()) < 3:
-            response = {'message': "category cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "category cannot be empty"
+                })), 400
         if category and category.isdigit():
             return make_response(
                 jsonify({
@@ -277,27 +328,33 @@ class Events(MethodView):
                 })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                     str(category)):
-            response = {
-                'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message':
+                    "category should not have special characters"
+                })), 400
         elif category and len(category) > 20:
             return make_response(
                 jsonify({
                     'message': 'Category too long, maximum 20 letters'
                 })), 400
         if location and isinstance(location, int):
-            response = {'message': "location cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "location cannot be number"
+                })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                     str(location)):
-            response = {
-                'message': "location should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message':
+                    "location should not have special characters"
+                })), 400
         if location and len(location.strip()) < 3:
-            response = {'message': "location cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message': "location cannot be empty"
+                })), 400
         if location and location.isdigit():
             return make_response(
                 jsonify({
@@ -311,7 +368,7 @@ class Events(MethodView):
         event.name = name
         event.description = description
         event.category = category
-        event.date = date
+        event.date_of_event = date_of_event
         event.location = location
         event.save_event()
         response = event.serialize()
@@ -320,14 +377,14 @@ class Events(MethodView):
     @login_required
     def delete(self, user_id, id):
         """Delete an event according to the event id given."""
-        events = Event.query.filter_by(id=id).first()
+        events = Event.query.filter_by(author=user_id, id=id).first()
         if not events:
-            response = {'message': 'event doesnt exist matching the id'}
-            return make_response(jsonify(response)), 404
-        else:
-            events.delete_event()
-            response = {'message': 'event deleted'}
-            return make_response(jsonify(response)), 200
+            return make_response(
+                jsonify({
+                    'message': 'event doesnt exist matching the id'
+                })), 404
+        events.delete_event()
+        return make_response(jsonify({'message': 'event deleted'})), 200
 
 
 class PublicEvent(MethodView):
@@ -335,7 +392,7 @@ class PublicEvent(MethodView):
 
     @staticmethod
     def get():
-        """Enables the public to view the created events without authenication."""
+        """Enable the public to view the created events without authenication."""
         try:
             limit = int(request.args.get('limit', default=20, type=int))
             page = int(request.args.get('page', default=1, type=int))

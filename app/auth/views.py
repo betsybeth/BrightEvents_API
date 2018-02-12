@@ -185,7 +185,7 @@ class ChangePassword(MethodView):
                     'message':
                     'new password  and confirm password should be equal'
                 })), 400
-        return make_response(jsonify({'message': 'invalid password'})), 403
+        return make_response(jsonify({'message': 'wrong password'})), 403
 
 
 auth_blueprint.add_url_rule(

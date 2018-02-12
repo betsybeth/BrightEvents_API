@@ -57,13 +57,12 @@ class TestEvents(TestCase):
     def test_event_create(self):
         """Test if event can be created."""
         self.registration()
-        token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/create_event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': token_
+                'Authorization': self.authorization()
             })
         self.assertEqual(result.status_code, 201)
 
@@ -100,7 +99,7 @@ class TestEvents(TestCase):
                 'Authorization': self.authorization()
             })
 
-        resp = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
@@ -131,7 +130,7 @@ class TestEvents(TestCase):
                 'Authorization': self.authorization()
             })
 
-        resp = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
@@ -161,7 +160,7 @@ class TestEvents(TestCase):
             headers={
                 'Authorization': self.authorization()
             })
-        resp = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
@@ -191,7 +190,7 @@ class TestEvents(TestCase):
             headers={
                 'Authorization': self.authorization()
             })
-        resp = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
@@ -214,14 +213,13 @@ class TestEvents(TestCase):
     def test_rsvp_already_exists(self):
         """Test rsvp already exists."""
         self.test_event_create()
-        res = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(res.status_code, 201)
         second_result = self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
@@ -235,14 +233,13 @@ class TestEvents(TestCase):
     def test_get_all_rsvp(self):
         """Test if you can view all rsvp."""
         self.test_event_create()
-        response = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(response.status_code, 201)
         res = self.client.get(
             '/events/1/rsvps/',
             data=json.dumps(self.rsvp),
@@ -263,7 +260,6 @@ class TestEvents(TestCase):
                 'Authorization': self.authorization()
             })
         result_in_json = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 201)
         res = self.client.get(
             '/events/1/rsvps/{}'.format(result_in_json['id']),
             content_type='application/json',
@@ -272,52 +268,48 @@ class TestEvents(TestCase):
             })
         self.assertEqual(res.status_code, 200)
 
-    def test_if_event_available_before_rsvp(self):
-        """Test if event exist before rsvp is created"""
+    def test_event_available_before_rsvp(self):
+        """Test if event exist before rsvp creates."""
         self.registration()
-        token_ = json.loads(self.login().data.decode())['token']
         result = self.client.post(
             '/events/1/create_rsvp/',
             content_type='application/json',
             headers={
-                'Authorization': token_
-            })
-        self.assertIn('No event available', str(result.data))
+                'Authorization': self.authorization()})
+        self.assertIn('This event is not available', str(result.data))
         self.assertEqual(result.status_code, 404)
 
-    def test_if_event_available_before_get_rsvp(self):
-        """Test if event exist before viewing rsvp"""
+    def test_event_available_before_get_rsvps(self):
+        """Test if event exist before viewing rsvps."""
         self.registration()
-        token_ = json.loads(self.login().data.decode())['token']
         result = self.client.get(
             '/events/1/rsvps/',
             content_type='application/json',
             headers={
-                'Authorization': token_
+                'Authorization': self.authorization()
             })
-        self.assertIn('Event is not available', str(result.data))
+        self.assertIn('This event is not available', str(result.data))
         self.assertEqual(result.status_code, 404)
 
     def test_edit_rsvp(self):
         """Test if rsvp can be edited."""
         self.test_event_create()
-        self.new_data = {
+        new_data = {
             'name': 'eventname',
             'email': 'person@person.com',
             'phone_no': '123458769',
             'category': 'social'
         }
-        response = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(response.status_code, 201)
         res = self.client.put(
             '/events/1/rsvps/1/',
-            data=json.dumps(self.new_data),
+            data=json.dumps(new_data),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
@@ -327,14 +319,13 @@ class TestEvents(TestCase):
     def test_delete_rsvp(self):
         """Test if event can be deleted."""
         self.test_event_create()
-        response = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(response.status_code, 201)
         res = self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
@@ -346,21 +337,19 @@ class TestEvents(TestCase):
     def test_rsvp_exist_after_delete(self):
         """Test if rsvp exists after been deleted."""
         self.test_event_create()
-        response = self.client.post(
+        self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(response.status_code, 201)
-        res = self.client.delete(
+        self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
             headers={
                 'Authorization': self.authorization()
             })
-        self.assertEqual(res.status_code, 200)
         res = self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
@@ -368,7 +357,3 @@ class TestEvents(TestCase):
                 'Authorization': self.authorization()
             })
         self.assertEqual(res.status_code, 404)
-
-
-if __name__ == '__main__':
-    unittest.main()
