@@ -13,7 +13,7 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255))
+    name = db.Column(db.String(80))
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     events = db.relationship(
@@ -33,7 +33,7 @@ class User(db.Model):
         return bool(re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", email))
 
     def validate_password(self, password):
-        """Checks the password against the hash password."""
+        """Check the password against the hash password."""
         return check_password_hash(self.password, password)
 
     def generate_token(self, user_id):
@@ -53,7 +53,7 @@ class User(db.Model):
 
     @staticmethod
     def decoding_token(token_auth):
-        """Decodes a token and return String|Integer."""
+        """Decode a token and return String|Integer."""
         try:
             payload = jwt.decode(token_auth, current_app.config['SECRET'])
             blacklisted_token = BlackList.check_token(token_auth)
@@ -66,13 +66,18 @@ class User(db.Model):
             return 'Invalid token. Please log in again.'
 
     def save_user(self):
-        """Addes a user to the database"""
+        """Add a user to the databases"""
         db.session.add(self)
         db.session.commit()
 
-    def __repr__(self):
-        """Returns a representaion of the User class instance."""
-        return "<User: {}>".format(self.name)
+    def serialize(self):
+        """Return the user as a dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'password': self.password
+        }
 
 
 class Event(db.Model):
@@ -80,23 +85,23 @@ class Event(db.Model):
     __tablename__ = "events"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.String(255), nullable=False)
-    category = db.Column(db.String(255), nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(80), nullable=False)
+    category = db.Column(db.String(80), nullable=False)
+    date_of_event = db.Column(db.DateTime)
     author = db.Column(db.Integer, db.ForeignKey(User.id))
-    location = db.Column(db.String(255), nullable=False)
+    location = db.Column(db.String(80), nullable=False)
     rsvps = db.relationship(
         'Rsvp',
         backref="events",
         order_by="Rsvp.event_id",
         cascade="all, delete-orphan")
 
-    def __init__(self, name, description, category, date, author, location):
+    def __init__(self, name, description, category, date_of_event, author, location):
         self.name = name
         self.description = description
         self.category = category
-        self.date = date
+        self.date_of_event = date_of_event
         self.author = author
         self.location = location
 
@@ -106,9 +111,19 @@ class Event(db.Model):
         db.session.commit()
 
     @staticmethod
-    def exist_event(user_id, date):
+    def validate_date(date_of_event):
+        try:
+            date = datetime.strptime(date_of_event, '%d-%m-%y').date()
+        except ValueError:
+            return 'you have entered the date format,date should be DD-MM-YY'
+        if date < date.today():
+            return ' event cannot have the previous date'
+        return date_of_event
+
+    @staticmethod
+    def exist_event(user_id, date_of_event):
         """Checks if an exist exists."""
-        event = Event.query.filter_by(author=user_id, date=date).first()
+        event = Event.query.filter_by(author=user_id, date_of_event=date_of_event).first()
         if event:
             return True
         return False
@@ -126,11 +141,10 @@ class Event(db.Model):
     def serialize(self):
         """Returns the event as a dictionary."""
         return {
-            'id': self.id,
             'name': self.name,
             'description': self.description,
             'category': self.category,
-            'date': self.date,
+            'date': self.date_of_event,
             'author': self.author,
             'location': self.location
         }
@@ -141,11 +155,11 @@ class Rsvp(db.Model):
     __tablename__ = "rsvps"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(80), nullable=False)
     phone_no = db.Column(db.Integer, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey(Event.id))
-    category = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(80), nullable=False)
 
     def __init__(self, name, email, phone_no, event_id, category):
         self.name = name
@@ -172,7 +186,6 @@ class Rsvp(db.Model):
     def serialize(self):
         """Returns the rsvp as a dictionary."""
         return {
-            'id': self.id,
             'name': self.name,
             'email': self.email,
             'phone_no': self.phone_no,

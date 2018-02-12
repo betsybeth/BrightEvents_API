@@ -16,7 +16,7 @@ class Rsvps(MethodView):
         """A user is able to create an rsvp of an event according to the event Id."""
         event = Event.query.filter_by(author=user_id, id=id).first()
         if not event:
-            response = {'message': 'No event available'}
+            response = {'message': 'This event is not available'}
             return make_response(jsonify(response)), 404
         json_dict = request.get_json()
         name = json_dict.get('name')
@@ -110,7 +110,7 @@ class Rsvps(MethodView):
             if q:
                 event = Event.query.filter_by(author=user_id, id=id).first()
                 if not event:
-                    response = {'message': 'Event is not available'}
+                    response = {'message': 'This event is not available'}
                     return make_response(jsonify(response)), 404
                 rsvps_found = Rsvp.query.filter_by(event_id=id).filter(
                     Rsvp.name.ilike("%" + q + "%"))
@@ -130,7 +130,7 @@ class Rsvps(MethodView):
             else:
                 event = Event.query.filter_by(author=user_id, id=id).first()
                 if not event:
-                    response = {'message': 'Event is not available'}
+                    response = {'message': 'This event is not available'}
                     return make_response(jsonify(response)), 404
                 rsvps = Rsvp.query.filter_by(event_id=id).paginate(
                     int(page), int(limit), False)
@@ -170,7 +170,7 @@ class Rsvps(MethodView):
         phone_no = json_dict.get('phone_no')
         category = json_dict.get('category')
         if not rsvp:
-            response = {'message': 'no rsvp available'}
+            response = {'message': 'this rsvp is not available'}
             return make_response(jsonify(response)), 404
         if name and isinstance(name, int):
             response = {'message': "name cannot be number"}
@@ -227,7 +227,7 @@ class Rsvps(MethodView):
         """Deletes an Rsvp according to the rsvp Id."""
         rsvp = Rsvp.query.filter_by(event_id=id, id=_id).first()
         if not rsvp:
-            response = {'message': 'Rsvp does not exist'}
+            response = {'message': 'this rsvp does not exist'}
             return make_response(jsonify(response)), 404
         rsvp.delete_rsvp()
         response = {'message': 'Rsvp deleted successfully'}
@@ -346,8 +346,7 @@ class PublicRsvp(MethodView):
                     "email": rsvp.email,
                     'phone_no': rsvp.phone_no,
                     'category': rsvp.category,
-                    'event_id': rsvp.event_id,
-                    'id': rsvp.id
+                    'event_id': rsvp.event_id
                 }
                 results.append(rsvp_search)
             return make_response(jsonify(results=results)), 200
