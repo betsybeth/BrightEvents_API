@@ -11,8 +11,8 @@ auth_blueprint = Blueprint('auth', __name__)
 
 class Register(MethodView):
     """Register class handles authenication."""
-
-    def post(self):
+    @staticmethod
+    def post():
         """Registers user."""
         json_dict = request.get_json()
         name = json_dict.get('name')
@@ -133,7 +133,9 @@ class ResetPassword(MethodView):
                 'message': "wrong email, please confirm your email"
             })), 400
 
-    def put(self):
+
+    @staticmethod
+    def put():
         """Resets user password"""
         token_ = request.headers.get('Authorization')
         if token_:

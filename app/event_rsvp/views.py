@@ -97,7 +97,7 @@ class Rsvps(MethodView):
             try:
                 limit = request.headers.get('limit', default=20, type=int)
                 page = request.headers.get('page', default=1, type=int)
-            except TypeError as e:
+            except TypeError:
                 return make_response(
                     jsonify({
                         "error": "limit and page must be int"
