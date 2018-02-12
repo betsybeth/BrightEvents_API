@@ -33,7 +33,7 @@ class User(db.Model):
         return bool(re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", email))
 
     def validate_password(self, password):
-        """Checks the password against the hash password."""
+        """Check the password against the hash password."""
         return check_password_hash(self.password, password)
 
     def generate_token(self, user_id):
@@ -53,7 +53,7 @@ class User(db.Model):
 
     @staticmethod
     def decoding_token(token_auth):
-        """Decodes a token and return String|Integer."""
+        """Decode a token and return String|Integer."""
         try:
             payload = jwt.decode(token_auth, current_app.config['SECRET'])
             blacklisted_token = BlackList.check_token(token_auth)
@@ -66,12 +66,12 @@ class User(db.Model):
             return 'Invalid token. Please log in again.'
 
     def save_user(self):
-        """Addes a user to the database"""
+        """Add a user to the databases"""
         db.session.add(self)
         db.session.commit()
 
     def serialize(self):
-        """Returns the user as a dictionary."""
+        """Return the user as a dictionary."""
         return {
             'id': self.id,
             'name': self.name,
@@ -97,8 +97,7 @@ class Event(db.Model):
         order_by="Rsvp.event_id",
         cascade="all, delete-orphan")
 
-    def __init__(self, name, description, category, date_of_event, author,
-                 location):
+    def __init__(self, name, description, category, date_of_event, author, location):
         self.name = name
         self.description = description
         self.category = category
@@ -124,8 +123,7 @@ class Event(db.Model):
     @staticmethod
     def exist_event(user_id, date_of_event):
         """Checks if an exist exists."""
-        event = Event.query.filter_by(
-            author=user_id, date_of_event=date_of_event).first()
+        event = Event.query.filter_by(author=user_id, date_of_event=date_of_event).first()
         if event:
             return True
         return False
