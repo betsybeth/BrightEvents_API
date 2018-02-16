@@ -240,11 +240,6 @@ class Events(MethodView):
                 jsonify({
                     'message': 'This event is not available'
                 })), 404
-        if name.casefold() != name.casefold():
-            return make_response(
-                jsonify({
-                    'message': "Event name exists"
-                })), 400
         if name and isinstance(name, int):
             return make_response(
                 jsonify({
