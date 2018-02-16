@@ -13,65 +13,68 @@ class Rsvps(MethodView):
 
     @login_required
     def post(self, id, user_id):
-        """A user is able to create an rsvp of an event according to the event Id."""
+        """A user is able to create an rsvp\
+         of an event according to the event Id."""
         event = Event.query.filter_by(author=user_id, id=id).first()
         if not event:
-            response = {'message': 'This event is not available'}
-            return make_response(jsonify(response)), 404
+            return make_response(
+                jsonify({'message': 'This event is not available'})), 404
         json_dict = request.get_json()
         name = json_dict.get('name')
         email = json_dict.get('email')
         phone_no = json_dict.get('phone_no')
         category = json_dict.get('category')
         if name and isinstance(name, int):
-            response = {'message': "name cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be number"})), 400
         if name and name.isdigit():
-            response = {'message': "name cannot be integer"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be integer"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message':
+                         "name should not have special characters"})), 400
         if not re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", str(email)):
             return make_response(jsonify({'message': 'invalid email'})), 400
         rsvp = Rsvp.query.filter_by(event_id=id, email=email).first()
         if rsvp:
-            response = {'message': "Rsvp already exists"}
-            return make_response(jsonify(response)), 409
+            return make_response(
+                jsonify({'message': "Rsvp already exists"})), 409
         if len(name.strip()) < 3:
-            response = {'message': "name cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be empty"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message':
+                         "name should not have special characters"})), 400
         if phone_no and len(phone_no.strip()) < 3:
-            response = {'message': "phone_no cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "phone_no cannot be empty"})), 400
+
         if len(phone_no) < 9:
             return make_response(jsonify({
                 'message': 'phone_no too short'
             })), 400
         if category and isinstance(category, int):
-            response = {'message': "category cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be number"})), 400
+
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', category):
-            response = {
+            return make_response(jsonify({
                 'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         if category and len(category.strip()) < 3:
-            response = {'message': "category cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be empty"})), 400
         if category.isdigit():
             return make_response(
                 jsonify({
                     'message': 'Category cannot be Integer'
                 })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', category):
-            response = {
+            return make_response(jsonify({
                 'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         rsvp = Rsvp(
             name=name,
             email=email,
@@ -92,7 +95,8 @@ class Rsvps(MethodView):
 
     @login_required
     def get(self, user_id, id, _id=None):
-        """Gets all the created rsvp and also gets an rsvp according to it Id."""
+        """Gets all the created rsvp and \
+        also gets an rsvp according to it Id."""
         if _id is None:
             try:
                 limit = request.headers.get('limit', default=20, type=int)
@@ -110,8 +114,9 @@ class Rsvps(MethodView):
             if q:
                 event = Event.query.filter_by(author=user_id, id=id).first()
                 if not event:
-                    response = {'message': 'This event is not available'}
-                    return make_response(jsonify(response)), 404
+                    return make_response(
+                        jsonify({'message':
+                                 'This event is not available'})), 404
                 rsvps_found = Rsvp.query.filter_by(event_id=id).filter(
                     Rsvp.name.ilike("%" + q + "%"))
                 results = []
@@ -130,8 +135,9 @@ class Rsvps(MethodView):
             else:
                 event = Event.query.filter_by(author=user_id, id=id).first()
                 if not event:
-                    response = {'message': 'This event is not available'}
-                    return make_response(jsonify(response)), 404
+                    return make_response(
+                        jsonify({'message':
+                                 'This event is not available'})), 404
                 rsvps = Rsvp.query.filter_by(event_id=id).paginate(
                     int(page), int(limit), False)
                 prev_page = ''
@@ -155,8 +161,8 @@ class Rsvps(MethodView):
         else:
             rsvps = Rsvp.query.filter_by(id=_id).first()
             if not rsvps:
-                response = {'message': 'Rsvp is not available'}
-                return make_response(jsonify(response)), 404
+                return make_response(
+                    jsonify({'message': 'Rsvp is not available'})), 404
             response = rsvps.serialize()
             return make_response(jsonify(response)), 200
 
@@ -170,50 +176,49 @@ class Rsvps(MethodView):
         phone_no = json_dict.get('phone_no')
         category = json_dict.get('category')
         if not rsvp:
-            response = {'message': 'this rsvp is not available'}
-            return make_response(jsonify(response)), 404
+            return make_response(
+                jsonify({'message': 'this rsvp is not available'})), 404
         if name and isinstance(name, int):
-            response = {'message': "name cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be number"})), 400
         if name and name.isdigit():
-            response = {'message': "name cannot be integer"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be integer"})), 400
         if name and len(name.strip()) < 3:
-            response = {'message': "name cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be empty"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "Name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message':
+                         "Name should not have special characters"})), 400
         if not re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", str(email)):
             return make_response(jsonify({'message': 'Invalid email'})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', phone_no):
-            response = {
+            return make_response(jsonify({
                 'message': "Phone_no should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         if len(phone_no.strip()) < 3:
-            response = {'message': "phone_no cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "phone_no cannot be empty"})), 400
         if len(phone_no) < 9:
             return make_response(jsonify({
                 'message': 'phone_no too short'
             })), 400
         if category and isinstance(category, int):
-            response = {'message': "category cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be number"})), 400
         if len(category.strip()) < 3:
-            response = {'message': "category cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be empty"})), 400
         if category.isdigit():
             return make_response(
                 jsonify({
                     'message': 'Category cannot be Integer'
                 })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', category):
-            response = {
+            return make_response(jsonify({
                 'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         rsvp.name = name
         rsvp.email = email
         rsvp.phone_no = phone_no
@@ -227,8 +232,8 @@ class Rsvps(MethodView):
         """Deletes an Rsvp according to the rsvp Id."""
         rsvp = Rsvp.query.filter_by(event_id=id, id=_id).first()
         if not rsvp:
-            response = {'message': 'this rsvp does not exist'}
-            return make_response(jsonify(response)), 404
+            return make_response(
+                jsonify({'message': 'this rsvp does not exist'})), 404
         rsvp.delete_rsvp()
         response = {'message': 'Rsvp deleted successfully'}
         return make_response(jsonify(response)), 200
@@ -250,54 +255,55 @@ class PublicRsvp(MethodView):
         phone_no = json_dict.get('phone_no')
         category = json_dict.get('category')
         if name and isinstance(name, int):
-            response = {'message': "name cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be number"})), 400
         if name and name.isdigit():
-            response = {'message': "name cannot be integer"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be integer"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message':
+                         "name should not have special characters"})), 400
         if not re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", str(email)):
             return make_response(jsonify({'message': 'invalid email'})), 400
         rsvp = Rsvp.query.filter_by(email=email).first()
         if rsvp:
-            response = {'message': "Rsvp already exists"}
-            return make_response(jsonify(response)), 409
+            return make_response(
+                jsonify({'message': "Rsvp already exists"})), 409
         if len(name.strip()) < 3:
-            response = {'message': "name cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "name cannot be empty"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', str(name)):
-            response = {'message': "name should not have special characters"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({
+                    'message':
+                    "name should not have special characters"})), 400
         if phone_no and len(phone_no.strip()) < 3:
-            response = {'message': "phone_no cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "phone_no cannot be empty"})), 400
         if len(phone_no) < 9:
             return make_response(jsonify({
                 'message': 'phone_no too short'
             })), 400
         if category and isinstance(category, int):
-            response = {'message': "category cannot be number"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be number"})), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', category):
-            response = {
+            return make_response(jsonify({
                 'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         if category and len(category.strip()) < 3:
-            response = {'message': "category cannot be empty"}
-            return make_response(jsonify(response)), 400
+            return make_response(
+                jsonify({'message': "category cannot be empty"})), 400
         if category.isdigit():
             return make_response(
                 jsonify({
                     'message': 'Category cannot be Integer'
                 })), 400
         if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*', category):
-            response = {
+            return make_response(jsonify({
                 'message': "category should not have special characters"
-            }
-            return make_response(jsonify(response)), 400
+            })), 400
         rsvp = Rsvp(
             name=name,
             email=email,
@@ -318,7 +324,8 @@ class PublicRsvp(MethodView):
 
     @staticmethod
     def get(id):
-        """Enables the public to view the created rsvp without authenication."""
+        """Enable the public to view the\
+         created rsvp without authenication."""
         try:
             limit = int(request.args.get('limit', default=20, type=int))
             page = int(request.args.get('page', default=1, type=int))
@@ -335,8 +342,8 @@ class PublicRsvp(MethodView):
         if q:
             event = Event.query.filter_by(id=id).first()
             if not event:
-                response = {'message': 'Event is not available'}
-                return make_response(jsonify(response)), 404
+                return make_response(jsonify({'message':
+                                              'Event is not available'})), 404
             rsvps_found = Rsvp.query.filter_by(event_id=id).filter(
                 Rsvp.name.ilike("%" + q + "%"))
             results = []
@@ -353,8 +360,9 @@ class PublicRsvp(MethodView):
         else:
             event = Event.query.filter_by(id=id).first()
             if not event:
-                response = {'message': 'Event is not available'}
-                return make_response(jsonify(response)), 404
+                return make_response(
+                    jsonify({'message':
+                             'Event is not available'})), 404
             rsvps = Rsvp.query.filter_by(event_id=id).paginate(
                 int(page), int(limit), False)
             prev_page = ''
@@ -386,7 +394,6 @@ rsvp_blueprint.add_url_rule(
     '/events/<int:id>/rsvps/<int:_id>/',
     view_func=Rsvps.as_view('view_rsvps'),
     methods=['DELETE', 'PUT', 'GET'])
-
 rsvp_blueprint.add_url_rule(
     '/public_events/<id>/public_rsvps',
     view_func=PublicRsvp.as_view('public_rsvps'),

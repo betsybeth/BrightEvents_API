@@ -1,18 +1,13 @@
 import re
-import os
 from datetime import datetime, timedelta
 from flask.views import MethodView
-from flask import Blueprint,current_app, make_response, request, jsonify, render_template, url_for
-from flask_mail import Mail, Message
+from flask import Blueprint,current_app, make_response, request, jsonify
 from werkzeug.security import generate_password_hash
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from app.decorators.decorators import login_required
 from app.models import User
 from app.models import BlackList
 
 auth_blueprint = Blueprint('auth', __name__)
-mail = Mail()
-SECRET = URLSafeTimedSerializer(os.getenv('SECRET'))
 
 
 class Register(MethodView):
@@ -59,30 +54,20 @@ class Register(MethodView):
                         jsonify({
                             'message': "password is too short"
                         })), 400
-                try:
-                    user = User(name=name, email=email, password=password)
-                    user.authenticated = True
-
-                    # msg = Message(sender = current_app.config.get('MAIL_USERNAME'),subject='Registration',
-                    #           body='Thanks for registering with BritoEvento!',
-                    #           recipients=[user.email])
-                    msg = Message(
-                            "RSVP to an Event",
-                            sender='bethwambuimuniu@gmail.com',
-                            recipients=[user.email])
-                    msg.html = 'To Verify your Email Addres'
-
-                    mail.send(msg)
-
-                    user.save_user()
-                    token_ = user.generate_token(user.id)
+                user = User.query.filter_by(email=email).first()
+                if user:
                     response = {
-                        'message': 'successfully registered',
-                        'token': token_.decode()
+                        'message': 'email already exists,Please log in'
                     }
-                    return make_response(jsonify(response)), 201
-                except ValueError:
-                    return make_response(jsonify({'message': 'Email already exists'})), 409
+                    return make_response(jsonify(response)), 409
+                user = User(name=name, email=email, password=password)
+                user.save_user()
+                token_ = user.generate_token(user.id)
+                response = {
+                    'message': 'successfully registered',
+                    'token': token_.decode()
+                }
+                return make_response(jsonify(response)), 201
             return make_response(jsonify({'message': 'invalid email'})), 400
         return make_response(jsonify({'message': 'empty inputs'})), 400
 
@@ -140,7 +125,6 @@ class Logout(MethodView):
                 "message": "Please provide a valid token"
             })), 403
 
-
 class ResetPassword(MethodView):
     """Validates an email that is been used to reset password for an existing user,
         then the user is able to reset password in a secure way"""
@@ -151,98 +135,41 @@ class ResetPassword(MethodView):
         email = json_dict.get('email')
         user = User.query.filter_by(email=email).first()
         if user:
-            token = SECRET.dumps(user.email, salt='reset_password')
-            subject = "Reset Password"
-            name = user.name
-            link = url_for("auth.reset_password", token=token, _external=True)
-            html = render_template("inline_reset.html", link=link)
+            token_ = user.generate_token(user.id)
+            if token_:
+                response = {
+                    'message':
+                    "Email is already confirmed, you can reset your password",
+                    "token": token_.decode()
+                }
+                return make_response(jsonify(response)), 200
+        return make_response(
+            jsonify({
+                'message': "wrong email, please confirm your email"
+            })), 400
 
-            send_mail(to=user.email, subject=subject, html=html)
-
-            return make_response(jsonify({
-                'message': 'Check your email to reset your password.'
-            })) ,200
-
-        return make_response(jsonify({
-            'message': 'Wrong Email or email does not exist.'
-        })), 401
-
-    @staticmethod
-    def put(token):
+    def put(self):
         """Resets user password"""
-        try:
-            email = SECRET.loads(
-                token, salt='reset-password',
-                max_age=4000
-            )
-
-        except SignatureExpired:
-            response = {
-                'message': 'The token is expired!, confirm your e-mail again'
-            }
-            return make_response(jsonify(response)), 40
-        user = User.query.filter_by(email=email).first()
-        json_dict = request.get_json()
-        new_password = json_dict.get('new_password')
-        if user:
-            user.password = generate_password_hash(new_password)
-            user.save_user()
-            response = {
-                "message": 'Password reset successful',
-                'new password': new_password
-            }
-            return make_response(jsonify(response)), 201
-
-
-class ConfirmEmail(MethodView):
-    """Handles email confirmation and checks if it is the right email and verifys"""
-
-    @staticmethod
-    def post():
-        """Handle POST request for this view. Url ---> /api/auth/confirm"""
-        json_dict = request.get_json()
-        email = json_dict.get('email')
-        user = User.query.filter_by(email=email).first()
-        name = user.name
-        if user:
-            token = SECRET.dumps(user.email, salt='email-confirm')
-            subject = "Email Confirmation"
-
-            link = url_for("auth.confirm_email", token=token, _external=True)
-            html = render_template("confirm_email.html", name=name,link=link)
-            send_mail(to=user.email, subject=subject, html=html)
-
-            response = {
-                'message': 'check email to verify.'
-            }
-            return make_response(jsonify(response)), 200
-
-        response = {
-            'message': 'Wrong Email or user email does not exist.'
-        }
-        return make_response(jsonify(response)), 401
-
-    @staticmethod
-    def put(token):
-        """Handles processing the unique link send to a user when they register and also confirming the token. """
-        try:
-            email = SECRET.loads(
-                token, salt='email-confirm',
-                max_age=4000
-            )
-        except SignatureExpired:
-            return make_response(jsonify({
-                'message': 'token is expired!, confirm your e-mail again'
-            })),401
-
-        user = User.query.filter_by(email=email).first()
-        if user.email_confirmed:
-            return make_response(jsonify({'Account already confirmed. Please login.'})),409
-        else:
-            user.email_confirmed = True
-            user.email_confirmed_on = datetime.now()
-            user.save_user()
-            return make_response(jsonify({'Thank you for confirming your email address!'})),200
+        token_ = request.headers.get('Authorization')
+        if token_:
+            response = User.decoding_token(token_)
+            json_dict = request.get_json()
+            new_password = json_dict.get('new_password')
+            if len(new_password.strip()) < 3:
+                response = {'message': "password cannot be empty"}
+                return make_response(jsonify(response)), 400
+            if len(new_password) < 8:
+                response = {'message': 'password  too short'}
+                return make_response(jsonify(response)), 400
+            user = User.query.filter_by(id=response).first()
+            if user:
+                user.password = generate_password_hash(new_password)
+                user.save_user()
+                response = {
+                    "message": 'Password reset successful',
+                    'new password': new_password
+                }
+                return make_response(jsonify(response)), 201
 
 
 
@@ -289,10 +216,6 @@ auth_blueprint.add_url_rule(
     '/login', view_func=Login.as_view('login'), methods=['POST'])
 auth_blueprint.add_url_rule(
     '/logout', view_func=Logout.as_view('logout'), methods=['POST'])
-auth_blueprint.add_url_rule(
-    '/confirm_email',
-    view_func=ConfirmEmail.as_view('confirm_email'),
-    methods=['POST', 'PUT'])
 auth_blueprint.add_url_rule(
     '/reset-password',
     view_func=ResetPassword.as_view('reset_password'),

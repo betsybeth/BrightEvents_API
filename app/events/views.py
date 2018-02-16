@@ -7,6 +7,7 @@ from app.models import Event
 event_blueprint = Blueprint('event', __name__)
 
 
+
 class Events(MethodView):
     """Event class handles events."""
 
@@ -43,11 +44,6 @@ class Events(MethodView):
                         'message':
                         "name should not have special characters"
                     })), 400
-            if name and len(name.strip()) < 2:
-                return make_response(
-                    jsonify({
-                        'message': 'Name is too short'
-                    })), 400
             if description and isinstance(description, int):
                 return make_response(
                     jsonify({
@@ -69,12 +65,6 @@ class Events(MethodView):
                 return make_response(
                     jsonify({
                         'message': 'Description cannot be Integer'
-                    })), 400
-            elif description and len(description) > 200:
-                return make_response(
-                    jsonify({
-                        'message':
-                        'Description should not be long, maximum 200 words'
                     })), 400
             if category and isinstance(category, int):
                 return make_response(
@@ -98,11 +88,6 @@ class Events(MethodView):
                         'message':
                         "category should not have special characters"
                     })), 400
-            elif category and len(category) > 20:
-                return make_response(
-                    jsonify({
-                        'message': 'Category too long, maximum 20 letters'
-                    })), 400
             if location and isinstance(location, int):
                 return make_response(
                     jsonify({
@@ -124,11 +109,6 @@ class Events(MethodView):
                 return make_response(
                     jsonify({
                         'message': 'Location cannot be Integer'
-                    })), 400
-            elif location and len(location) > 20:
-                return make_response(
-                    jsonify({
-                        'message': 'Location too long, maximum 20 letters'
                     })), 400
             event = Event(
                 name=name,
@@ -260,6 +240,11 @@ class Events(MethodView):
                 jsonify({
                     'message': 'This event is not available'
                 })), 404
+        if name.casefold() != name.casefold():
+            return make_response(
+                jsonify({
+                    'message': "Event name exists"
+                })), 400
         if name and isinstance(name, int):
             return make_response(
                 jsonify({
@@ -305,12 +290,6 @@ class Events(MethodView):
                 jsonify({
                     'message': 'Description cannot be Integer'
                 })), 400
-        elif description and len(description) > 200:
-            return make_response(
-                jsonify({
-                    'message':
-                    'Description should not be long, maximum 200 words'
-                })), 400
         if category and isinstance(category, int):
             return make_response(
                 jsonify({
@@ -333,11 +312,6 @@ class Events(MethodView):
                     'message':
                     "category should not have special characters"
                 })), 400
-        elif category and len(category) > 20:
-            return make_response(
-                jsonify({
-                    'message': 'Category too long, maximum 20 letters'
-                })), 400
         if location and isinstance(location, int):
             return make_response(
                 jsonify({
@@ -359,11 +333,6 @@ class Events(MethodView):
             return make_response(
                 jsonify({
                     'message': 'Location cannot be Integer'
-                })), 400
-        elif location and len(location) > 20:
-            return make_response(
-                jsonify({
-                    'message': 'Location too long, maximum 20 letters'
                 })), 400
         event.name = name
         event.description = description
