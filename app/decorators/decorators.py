@@ -1,4 +1,5 @@
-from flask import request, jsonify, make_response
+import os
+from flask import current_app,request, jsonify, make_response
 from functools import wraps
 from app.models import User
 

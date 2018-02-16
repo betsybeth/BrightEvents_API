@@ -10,7 +10,6 @@ from flask_cors import CORS
 from instance.config import app_configuration
 
 
-
 def create_app(config_name):
     """Creates flask api app."""
     app = FlaskAPI(__name__, instance_relative_config=True)

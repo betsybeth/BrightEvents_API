@@ -2,6 +2,7 @@ from unittest import TestCase
 from app import create_app
 from app.models import db
 import json
+from .base_file import registration, authorization
 
 
 class TestEvents(TestCase):
@@ -33,36 +34,15 @@ class TestEvents(TestCase):
             db.drop_all()
             db.create_all()
 
-    def registration(self):
-        """Helper method."""
-        result = self.client.post(
-            '/register',
-            data=json.dumps(self.user),
-            content_type='application/json')
-        self.assertEqual(result.status_code, 201)
-
-    def login(self):
-        """Helper method."""
-        second_result = self.client.post(
-            "/login",
-            data=json.dumps(self.user),
-            content_type='application/json')
-        return second_result
-
-    def authorization(self):
-        """Authorization helper method."""
-        token_ = json.loads(self.login().data.decode())['token']
-        return token_
-
     def test_event_create(self):
         """Test if event can be created."""
-        self.registration()
+        registration(self)
         result = self.client.post(
             '/create_event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(result.status_code, 201)
 
@@ -74,7 +54,7 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 201)
 
@@ -96,7 +76,7 @@ class TestEvents(TestCase):
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
 
         self.client.post(
@@ -104,14 +84,14 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         response = self.client.put(
             '/events/1/rsvps/1/',
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('name cannot be integer', str(res.data))
         self.assertIn('name cannot be integer', str(response.data))
@@ -127,7 +107,7 @@ class TestEvents(TestCase):
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
 
         self.client.post(
@@ -135,14 +115,14 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         response = self.client.put(
             '/events/1/rsvps/1/',
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('name cannot be number', str(res.data))
         self.assertIn('name cannot be number', str(response.data))
@@ -158,21 +138,21 @@ class TestEvents(TestCase):
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         response = self.client.put(
             '/events/1/rsvps/1/',
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('invalid email', str(res.data))
         self.assertIn('Invalid email', str(response.data))
@@ -188,21 +168,21 @@ class TestEvents(TestCase):
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         response = self.client.put(
             '/events/1/rsvps/1/',
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('name should not have special characters', str(res.data))
         self.assertIn('Name should not have special characters',
@@ -218,14 +198,14 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         second_result = self.client.post(
             '/events/1/create_rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('Rsvp already exists', str(second_result.data))
         self.assertEqual(second_result.status_code, 409)
@@ -238,14 +218,14 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         res = self.client.get(
             '/events/1/rsvps/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 200)
 
@@ -257,36 +237,36 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         result_in_json = json.loads(response.data.decode())
         res = self.client.get(
             '/events/1/rsvps/{}'.format(result_in_json['id']),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 200)
 
     def test_event_available_before_rsvp(self):
         """Test if event exist before rsvp creates."""
-        self.registration()
+        registration(self)
         result = self.client.post(
             '/events/1/create_rsvp/',
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()})
+                'Authorization': authorization(self)})
         self.assertIn('This event is not available', str(result.data))
         self.assertEqual(result.status_code, 404)
 
     def test_event_available_before_get_rsvps(self):
         """Test if event exist before viewing rsvps."""
-        self.registration()
+        registration(self)
         result = self.client.get(
             '/events/1/rsvps/',
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertIn('This event is not available', str(result.data))
         self.assertEqual(result.status_code, 404)
@@ -305,14 +285,14 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         res = self.client.put(
             '/events/1/rsvps/1/',
             data=json.dumps(new_data),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 200)
 
@@ -324,13 +304,13 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         res = self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 200)
 
@@ -342,18 +322,18 @@ class TestEvents(TestCase):
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         res = self.client.delete(
             '/events/1/rsvps/1/',
             content_type='application/json',
             headers={
-                'Authorization': self.authorization()
+                'Authorization': authorization(self)
             })
         self.assertEqual(res.status_code, 404)

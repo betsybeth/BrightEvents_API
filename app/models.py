@@ -30,6 +30,7 @@ class User(db.Model):
 
     @staticmethod
     def validate_email(email):
+        """Validated the email."""
         return bool(re.match(r"([\w\.-]+)@([\w\.-]+)(\.[\w\.]+$)", email))
 
     def validate_password(self, password):
@@ -66,7 +67,7 @@ class User(db.Model):
             return 'Invalid token. Please log in again.'
 
     def save_user(self):
-        """Add a user to the databases"""
+        """Add a user to the database"""
         db.session.add(self)
         db.session.commit()
 
@@ -97,7 +98,14 @@ class Event(db.Model):
         order_by="Rsvp.event_id",
         cascade="all, delete-orphan")
 
-    def __init__(self, name, description, category, date_of_event, author, location):
+    def __init__(
+            self,
+            name,
+            description,
+            category,
+            date_of_event,
+            author,
+            location):
         self.name = name
         self.description = description
         self.category = category
@@ -106,12 +114,12 @@ class Event(db.Model):
         self.location = location
 
     def save_event(self):
-        """Addes an event and stores it in the database."""
+        """Add an event and stores it in the database."""
         db.session.add(self)
         db.session.commit()
 
-    @staticmethod
-    def validate_date(date_of_event):
+    def validate_date(self, date_of_event):
+        """Method for validating date."""
         try:
             date = datetime.strptime(date_of_event, '%d-%m-%y').date()
         except ValueError:
@@ -122,24 +130,25 @@ class Event(db.Model):
 
     @staticmethod
     def exist_event(user_id, date_of_event):
-        """Checks if an exist exists."""
-        event = Event.query.filter_by(author=user_id, date_of_event=date_of_event).first()
+        """Check if an exist exists."""
+        event = Event.query.filter_by(
+            author=user_id, date_of_event=date_of_event).first()
         if event:
             return True
         return False
 
     @staticmethod
     def get_all_event(user_id):
-        """Gets all the events according to a particular user."""
+        """Get all the events according to a particular user."""
         return Event.query.filter_by(author=user_id).all()
 
     def delete_event(self):
-        """Deletes an event."""
+        """Delete an event."""
         db.session.delete(self)
         db.session.commit()
 
     def serialize(self):
-        """Returns the event as a dictionary."""
+        """Return the event as a dictionary."""
         return {
             'name': self.name,
             'description': self.description,
@@ -169,22 +178,22 @@ class Rsvp(db.Model):
         self.category = category
 
     def save_rsvp(self):
-        """Adds a rsvp to the database"""
+        """Add a rsvp to the database"""
         db.session.add(self)
         db.session.commit()
 
     @staticmethod
     def get_all_rsvp(event_id):
-        """Gets all the rsvp according to a particular eventid."""
+        """Get all the rsvp according to a particular eventid."""
         return Rsvp.query.filter_by(event_id=event_id).all()
 
     def delete_rsvp(self):
-        """Deletes a rsvp of the event."""
+        """Delete a rsvp of the event."""
         db.session.delete(self)
         db.session.commit()
 
     def serialize(self):
-        """Returns the rsvp as a dictionary."""
+        """Return the rsvp as a dictionary."""
         return {
             'name': self.name,
             'email': self.email,
@@ -208,12 +217,13 @@ class BlackList(db.Model):
         self.blacklisted_on = datetime.now()
 
     def save_token(self):
-        """Saves the token to the database."""
+        """Save the token to the database."""
         db.session.add(self)
         db.session.commit()
 
     @staticmethod
     def check_token(auth_token):
+        """Check token been sent."""
         blacklist_token = BlackList.query.filter_by(
             token=str(auth_token)).first()
         if blacklist_token:
@@ -222,5 +232,5 @@ class BlackList(db.Model):
         return False
 
     def serialize(self):
-        """Returns the token as a dictionary."""
+        """Return the token as a dictionary."""
         return {'token': self.token, 'blacklisted_no': self.blacklisted_on}
