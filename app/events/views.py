@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import re
 from flask import Blueprint, jsonify, make_response, request
 from flask.views import MethodView
@@ -5,7 +6,6 @@ from app.decorators.decorators import login_required
 from app.models import Event
 
 event_blueprint = Blueprint('event', __name__)
-
 
 
 class Events(MethodView):
@@ -20,6 +20,21 @@ class Events(MethodView):
         category = json_dict.get('category')
         date_of_event = json_dict.get('date_of_event')
         location = json_dict.get('location')
+        if date_of_event:
+            try:
+                date = datetime.strptime(date_of_event, '%d/%m/%y').date()
+            except TypeError:
+                return make_response(
+                    jsonify({
+                        'message':
+                        'you have entered the wrong \
+                        date format,date should be DD/MM/YY'
+                    })), 400
+            if date < date.today():
+                return make_response(
+                    jsonify({
+                        'message': 'event cannot have the previous date'
+                    })), 400
         if name and isinstance(name, int):
             return make_response(
                 jsonify({
