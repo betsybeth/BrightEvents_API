@@ -118,15 +118,6 @@ class Event(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def validate_date(self, date_of_event):
-        """Method for validating date."""
-        try:
-            date = datetime.strptime(date_of_event, '%d-%m-%y').date()
-        except ValueError:
-            return 'you have entered the date format,date should be DD-MM-YY'
-        if date < date.today():
-            return ' event cannot have the previous date'
-        return date_of_event
 
     @staticmethod
     def exist_event(user_id, date_of_event):

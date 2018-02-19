@@ -41,7 +41,8 @@ class TestEvents(TestCase):
         self.assertEqual(result.status_code, 201)
 
     def test_invalid_event_name(self):
-        """Test if event name has special characters used."""
+        """Test if event name has special \
+        characters used  when creating and editing."""
         registration(self)
         event_details = {'name': '##$$$'}
         result = self.client.post(
@@ -73,7 +74,7 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_name_number(self):
-        """Test if event name has numbers used."""
+        """Test if event name has numbers used when creating and editing."""
         registration(self)
         event_details = {'name': 12345}
         result = self.client.post(
@@ -103,7 +104,8 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_name_string_number(self):
-        """Test if event name has string numbers used."""
+        """Test if event name has string numbers \
+         used  when creating and editing."""
         registration(self)
         event_details = {'name': '12345'}
         result = self.client.post(
@@ -133,7 +135,8 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_location(self):
-        """Test if event location has special characters used."""
+        """Test if event location has special \
+        characters used when creating and editing."""
         registration(self)
         event_details = {'name': 'talanta', 'location': '##$$$'}
         result = self.client.post(
@@ -165,7 +168,8 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_description_number(self):
-        """Test if event description has numbers used."""
+        """Test if event description has \
+         numbers used when creating and editing."""
         registration(self)
         event_details = {'name': 'talanta', "description": '12346976'}
         result = self.client.post(
@@ -196,7 +200,8 @@ class TestEvents(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_event_category(self):
-        """Test if event category has special characters used."""
+        """Test if event category has special \
+        characters used  when creating and editing."""
         registration(self)
         event_details = {'name': 'talanta', 'category': "asd$%@@@"}
         result = self.client.post(
@@ -211,7 +216,8 @@ class TestEvents(TestCase):
         self.assertEqual(result.status_code, 400)
 
     def test_invalid_event_location_number(self):
-        """Test if event location has numbers used."""
+        """Test if event location has \
+        numbers used when creating and editing."""
         registration(self)
         event_details = {'name': 'talanta', "location": '12346976'}
         result = self.client.post(
