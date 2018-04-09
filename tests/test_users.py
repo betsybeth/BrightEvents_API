@@ -15,7 +15,8 @@ class TestAuthenication(TestCase):
         self.user = {
             'name': 'testexample',
             'email': 'test@email.com',
-            'password': '12345678'
+            'password': '12345678',
+            'confirm':'12345678'
         }
 
         with self.app.app_context():

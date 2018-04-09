@@ -13,13 +13,14 @@ class TestEvents(TestCase):
         self.user = {
             'name': 'testexample',
             'email': 'test@email.com',
-            'password': '123456789'
+            'password': '123456789',
+            'confirm':'123456789'
         }
         self.event = {
             'name': 'talanta',
             'description': 'awesome',
             'category': 'social',
-            'date': '12/9/19',
+            'date': '2018-6-18',
             'location': 'nairobi'
         }
 

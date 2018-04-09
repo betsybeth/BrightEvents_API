@@ -3,3 +3,4 @@
 .ropeproject/config.py
 *migrations/
 .coverage
+.vscode/

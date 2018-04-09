@@ -20,21 +20,24 @@ class Events(MethodView):
         category = json_dict.get('category')
         date_of_event = json_dict.get('date_of_event')
         location = json_dict.get('location')
+        # print("date", datetime.strptime(date_of_event, '%Y-%m-%d').date())
+
         if date_of_event:
             try:
-                date = datetime.strptime(date_of_event, '%d/%m/%y').date()
-            except TypeError:
+                date = datetime.strptime(date_of_event, '%Y-%m-%d').date()
+            except ValueError:
                 return make_response(
                     jsonify({
                         'message':
-                        'you have entered the wrong \
-                        date format,date should be DD/MM/YY'
+                        'Incorect date format,date should be YYYY-MM-DD'
                     })), 400
+
             if date < date.today():
                 return make_response(
                     jsonify({
                         'message': 'event cannot have the previous date'
                     })), 400
+
         if name and isinstance(name, int):
             return make_response(
                 jsonify({
@@ -55,7 +58,7 @@ class Events(MethodView):
             if re.match(r'.*[\%\$\^\*\@\!\?\(\)\:\;\&\'\"\{\}\[\]].*',
                         str(name)):
                 return make_response(
-                    jsonify({
+                    jsonify({  
                         'message':
                         "name should not have special characters"
                     })), 400

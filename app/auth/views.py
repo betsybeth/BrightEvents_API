@@ -20,12 +20,13 @@ class Register(MethodView):
         name = json_dict.get('name')
         email = json_dict.get('email')
         password = json_dict.get('password')
+        confirm = json_dict.get('confirm')
         if name and email and password:
             if name and isinstance(name, int):
                 return make_response(
                     jsonify({
                         'message': "name cannot be number"
-                    })), 400
+                    })), 400       
             if User.validate_email(email):
                 if name.isdigit():
                     return make_response(
@@ -43,17 +44,17 @@ class Register(MethodView):
                         jsonify({
                             'message':
                             "name should not have special characters"
-                        })), 400
+                        })), 400       
                 if len(password.strip()) < 3:
                     return make_response(
                         jsonify({
                             'message': "password cannot be empty"
                         })), 400
-                if len(password) < 8:
+                if password != confirm :
                     return make_response(
                         jsonify({
-                            'message': "password is too short"
-                        })), 400
+                            'message': "password and confirm must be equal"
+                        })), 400          
                 user = User.query.filter_by(email=email).first()
                 if user:
                     response = {

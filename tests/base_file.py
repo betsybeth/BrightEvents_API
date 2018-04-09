@@ -7,7 +7,8 @@ import json
 user = {
     'name': 'testexample',
     'email': 'test@email.com',
-    'password': '123456789'
+    'password': '123456789',
+    'confirm':'123456789'
 }
 event = {
     'name': 'talanta',
