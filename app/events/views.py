@@ -20,8 +20,6 @@ class Events(MethodView):
         category = json_dict.get('category')
         date_of_event = json_dict.get('date_of_event')
         location = json_dict.get('location')
-        # print("date", datetime.strptime(date_of_event, '%Y-%m-%d').date())
-
         if date_of_event:
             try:
                 date = datetime.strptime(date_of_event, '%Y-%m-%d').date()
@@ -44,11 +42,11 @@ class Events(MethodView):
                     'message': "name cannot be number"
                 })), 400
         if name and name.strip():
-            if Event.exist_event(user_id, date_of_event):
+            if Event.exist_event(user_id, name):
                 return make_response(
                     jsonify({
                         'message':
-                        'Event already exists due to the same date'
+                        'Event already exists due to the same name'
                     })), 409
             if name.isdigit():
                 return make_response(
@@ -76,7 +74,7 @@ class Events(MethodView):
                     })), 400
             if description and len(description.strip()) < 3:
                 return make_response(
-                    jsonify({
+                   jsonify({
                         'message': "description cannot be empty"
                     })), 400
             if description and description.isdigit():
@@ -188,20 +186,22 @@ class Events(MethodView):
                         })), 404
                 events = Event.query.filter_by(author=user_id).filter(
                     Event.name.ilike("%" + q + "%"))
-                results = []
+                result = []
                 for event in events:
                     event_search = {
                         'id': event.id,
+          
                         'name': event.name,
                         'description': event.description,
                         'category': event.category,
-                        'date': event.date_of_event,
+          
+                        'date_of_event': event.date_of_event,
                         'author': event.author,
                         'location': event.location,
                     }
 
-                    results.append(event_search)
-                return make_response(jsonify(results=results)), 200
+                    result.append(event_search)
+                return make_response(jsonify(result=result)), 200
             else:
                 events = Event.query.filter_by(author=user_id).paginate(
                     int(page), int(limit), False)
@@ -221,7 +221,7 @@ class Events(MethodView):
                         'name': event.name,
                         'description': event.description,
                         'category': event.category,
-                        'date': event.date_of_event,
+                        'date_of_event': event.date_of_event,
                         'author': event.author,
                         'location': event.location,
                     }
@@ -258,6 +258,16 @@ class Events(MethodView):
                 jsonify({
                     'message': 'This event is not available'
                 })), 404
+        if date_of_event:
+            try:
+                date = datetime.strptime(date_of_event, '%Y-%m-%d').date()
+            except ValueError:
+                return make_response(
+                    jsonify({
+                        'message':
+                        'Incorect date format,date should be YYYY-MM-DD'
+                    })), 400
+        
         if name and isinstance(name, int):
             return make_response(
                 jsonify({
@@ -353,7 +363,10 @@ class Events(MethodView):
         event.date_of_event = date_of_event
         event.location = location
         event.save_event()
-        response = event.serialize()
+        response = {
+            'event': event.serialize(),
+            'message': 'event updated successfully'
+        }
         return make_response(jsonify(response)), 200
 
     @login_required
@@ -372,55 +385,67 @@ class Events(MethodView):
 class PublicEvent(MethodView):
     """Handles the public events ."""
 
-    @staticmethod
-    def get():
+    def get(self,id=None):
         """Enable the public to view the created events without authenication."""
-        try:
-            limit = int(request.args.get('limit', default=20, type=int))
-            page = int(request.args.get('page', default=1, type=int))
-        except TypeError:
+        if id is None:
+            try:
+                limit = int(request.args.get('limit', default=20, type=int))
+                page = int(request.args.get('page', default=1, type=int))
+            except TypeError:
+                return make_response(
+                    jsonify({
+                        "error": "limit and page must be int"
+                    })), 400
+            if int(limit) > 6:
+                limit = 6
+            else:
+                limit = int(limit)
+            q = request.args.get('q', type=str)
+            if q:
+                events = Event.query.filter(Event.name.ilike("%" + q + "%"))
+                result = [event.serialize() for event in events]
+                return make_response(jsonify(result)), 200
+            events = Event.query.paginate(int(page), int(limit), False)
+            prev_page = ''
+            next_page = ''
+            pages = events.pages
+            if events.has_prev:
+                prev_page = '/public-events/?limit={}&page={}'.format(
+                    limit, events.prev_num)
+            if events.has_next:
+                next_page = '/public-events/?limit={}&page={}'.format(
+                    limit, events.next_num)
+            result = []
+            result = [event.serialize() for event in events.items]
             return make_response(
-                jsonify({
-                    "error": "limit and page must be int"
-                })), 400
-        if int(limit) > 6:
-            limit = 6
+                jsonify(
+                    result=result,
+                    prev_page=prev_page,
+                    next_page=next_page,
+                    pages=pages)), 200
         else:
-            limit = int(limit)
-        q = request.args.get('q', type=str)
-        if q:
-            events = Event.query.filter(Event.name.ilike("%" + q + "%"))
-            result = [event.serialize() for event in events]
-            return make_response(jsonify(result)), 200
-        events = Event.query.paginate(int(page), int(limit), False)
-        prev_page = ''
-        next_page = ''
-        pages = events.pages
-        if events.has_prev:
-            prev_page = '/public_events/?limit={}&page={}'.format(
-                limit, events.prev_num)
-        if events.has_next:
-            next_page = '/public_events/?limit={}&page={}'.format(
-                limit, events.next_num)
-        result = []
-        result = [event.serialize() for event in events.items]
-        return make_response(
-            jsonify(
-                result=result,
-                prev_page=prev_page,
-                next_page=next_page,
-                pages=pages)), 200
-
+            event = Event.query.filter_by(id=id).first()
+            if not event:
+                return make_response(
+                    jsonify({
+                        'message': 'This event is not available'
+                    })), 404
+            response = event.serialize()
+            return make_response(jsonify(response)), 200
 
 event_blueprint.add_url_rule(
-    '/create_event', view_func=Events.as_view('event'), methods=['POST'])
+    '/create-event', view_func=Events.as_view('event'), methods=['POST'])
 event_blueprint.add_url_rule(
     '/events', view_func=Events.as_view('events'), methods=['GET'])
 event_blueprint.add_url_rule(
     '/events/<int:id>/',
-    view_func=Events.as_view('view_events'),
+    view_func=Events.as_view('view-events'),
     methods=['DELETE', 'PUT', 'GET'])
 event_blueprint.add_url_rule(
-    '/public_events',
-    view_func=PublicEvent.as_view('public_events'),
+    '/public-events',
+    view_func=PublicEvent.as_view('public-events'),
     methods=['GET'])
+event_blueprint.add_url_rule(
+    '/public-events/<int:id>/',
+    view_func=PublicEvent.as_view('public-event'),
+    methods=['GET'])    

@@ -116,7 +116,7 @@ class Logout(MethodView):
                     blacklist_token.save_token()
                     return make_response(
                         jsonify({
-                            'message': 'successfully logout'
+                            'message': 'successfully logged out'
                         })), 200
                 except Exception as e:
                     return make_response(jsonify({"message": e})), 400

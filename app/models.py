@@ -43,7 +43,7 @@ class User(db.Model):
             payload = {
                 "exp": datetime.utcnow() + timedelta(minutes=100),
                 "iat": datetime.utcnow(),
-                "sub": user_id
+                "sub": user_id,
             }
 
             jwt_string = jwt.encode(
@@ -87,7 +87,7 @@ class Event(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    description = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
     category = db.Column(db.String(80), nullable=False)
     date_of_event = db.Column(db.DateTime)
     author = db.Column(db.Integer, db.ForeignKey(User.id))
@@ -120,10 +120,10 @@ class Event(db.Model):
 
 
     @staticmethod
-    def exist_event(user_id, date_of_event):
+    def exist_event(user_id, name):
         """Check if an exist exists."""
         event = Event.query.filter_by(
-            author=user_id, date_of_event=date_of_event).first()
+            author=user_id, name=name).first()
         if event:
             return True
         return False
@@ -141,10 +141,11 @@ class Event(db.Model):
     def serialize(self):
         """Return the event as a dictionary."""
         return {
+            'id':self.id,
             'name': self.name,
             'description': self.description,
             'category': self.category,
-            'date': self.date_of_event,
+            'date_of_event': self.date_of_event,
             'author': self.author,
             'location': self.location
         }
@@ -155,18 +156,14 @@ class Rsvp(db.Model):
     __tablename__ = "rsvps"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False)
-    phone_no = db.Column(db.Integer, nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey(Event.id))
-    category = db.Column(db.String(80), nullable=False)
 
-    def __init__(self, name, email, phone_no, event_id, category):
-        self.name = name
+
+    def __init__(self, email, event_id):
         self.email = email
-        self.phone_no = phone_no
         self.event_id = event_id
-        self.category = category
+
 
     def save_rsvp(self):
         """Add a rsvp to the database"""
@@ -186,10 +183,7 @@ class Rsvp(db.Model):
     def serialize(self):
         """Return the rsvp as a dictionary."""
         return {
-            'name': self.name,
-            'email': self.email,
-            'phone_no': self.phone_no,
-            'category': self.category,
+            'email': self.email,          
             'event_id': self.event_id
         }
 
