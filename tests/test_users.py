@@ -164,7 +164,7 @@ class TestAuthenication(TestCase):
             '/logout',
             headers={'Authorization': authorization(self)},
             content_type='application/json')
-        self.assertIn('successfully logout', str(result.data))
+        self.assertIn('successfully logged out', str(result.data))
         self.assertEqual(result.status_code, 200)
 
     def test_reset_password(self):

@@ -38,7 +38,7 @@ class TestEvents(TestCase):
         """Test if event can be created."""
         registration(self)
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -50,7 +50,7 @@ class TestEvents(TestCase):
         """Test if rsvp can be created."""
         self.test_event_create()
         res = self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -62,86 +62,23 @@ class TestEvents(TestCase):
         """Test if anyone can rsvp themselves to an event"""
         self.test_event_create()
         res = self.client.post(
-            '/public_events/1/public_rsvps/',
+            '/public-events/1/public-rsvps/',
             data=json.dumps(self.rsvp),
             content_type='application/json')
         self.assertEqual(res.status_code, 201)
-
-    def test_invalid_rsvp_name_is_string_number(self):
-        """Test if string number is used rsvp name."""
-        self.test_event_create()
-        rsvp_details = {"name": "12345"}
-        res = self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-
-        self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(self.rsvp),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        response = self.client.put(
-            '/events/1/rsvps/1/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        self.assertIn('name cannot be integer', str(res.data))
-        self.assertIn('name cannot be integer', str(response.data))
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(response.status_code, 400)
-
-    def test_invalid_rsvp_name_is_number(self):
-        """Test if number is used rsvp name."""
-        self.test_event_create()
-        rsvp_details = {"name": 12345}
-        res = self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-
-        self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(self.rsvp),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        response = self.client.put(
-            '/events/1/rsvps/1/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        self.assertIn('name cannot be number', str(res.data))
-        self.assertIn('name cannot be number', str(response.data))
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(response.status_code, 400)
-
     def test_invalid_rsvp_email(self):
         """Test if invalid rsvp email is used."""
         self.test_event_create()
         rsvp_details = {"email": "test.test"}
         res = self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(rsvp_details),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -159,49 +96,18 @@ class TestEvents(TestCase):
         self.assertEqual(res.status_code, 400)
         self.assertEqual(response.status_code, 400)
 
-    def test_invalid_rsvp_name(self):
-        """Test if invalid rsvp name is used."""
-        self.test_event_create()
-        rsvp_details = {"name": "@@@@"}
-        res = self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        self.client.post(
-            '/events/1/create_rsvp/',
-            data=json.dumps(self.rsvp),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        response = self.client.put(
-            '/events/1/rsvps/1/',
-            data=json.dumps(rsvp_details),
-            content_type='application/json',
-            headers={
-                'Authorization': authorization(self)
-            })
-        self.assertIn('name should not have special characters', str(res.data))
-        self.assertIn('Name should not have special characters',
-                      str(response.data))
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(response.status_code, 400)
-
     def test_rsvp_already_exists(self):
         """Test rsvp already exists."""
         self.test_event_create()
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         second_result = self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -214,7 +120,7 @@ class TestEvents(TestCase):
         """Test if you can view all rsvp."""
         self.test_event_create()
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -233,7 +139,7 @@ class TestEvents(TestCase):
         """Test if you can get an Rsvp by it's Id."""
         self.test_event_create()
         response = self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -252,7 +158,7 @@ class TestEvents(TestCase):
         """Test if event exist before rsvp creates."""
         registration(self)
         result = self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)})
@@ -281,7 +187,7 @@ class TestEvents(TestCase):
             'category': 'social'
         }
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -300,7 +206,7 @@ class TestEvents(TestCase):
         """Test if event can be deleted."""
         self.test_event_create()
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={
@@ -318,7 +224,7 @@ class TestEvents(TestCase):
         """Test if rsvp exists after been deleted."""
         self.test_event_create()
         self.client.post(
-            '/events/1/create_rsvp/',
+            '/events/1/create-rsvp/',
             data=json.dumps(self.rsvp),
             content_type='application/json',
             headers={

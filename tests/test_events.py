@@ -33,7 +33,7 @@ class TestEvents(TestCase):
         """Test if an event has been created."""
         registration(self)
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -47,14 +47,14 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': '##$$$'}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -79,14 +79,14 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': 12345}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -110,14 +110,14 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': '12345'}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -141,14 +141,14 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': 'talanta', 'location': '##$$$'}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -174,7 +174,7 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': 'talanta', "description": '12346976'}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
@@ -182,7 +182,7 @@ class TestEvents(TestCase):
             })
 
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -206,7 +206,7 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': 'talanta', 'category': "asd$%@@@"}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
@@ -222,7 +222,7 @@ class TestEvents(TestCase):
         registration(self)
         event_details = {'name': 'talanta', "location": '12346976'}
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(event_details),
             content_type='application/json',
             headers={
@@ -235,20 +235,20 @@ class TestEvents(TestCase):
         """Test if event already exists."""
         registration(self)
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
         res = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
                 'Authorization': authorization(self)
             })
-        self.assertIn('Event already exists due to the same date', str(
+        self.assertIn('Event already exists due to the same name', str(
             res.data))
         self.assertEqual(res.status_code, 409)
 
@@ -268,7 +268,7 @@ class TestEvents(TestCase):
         """Test if you can view all event"""
         registration(self)
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -286,7 +286,7 @@ class TestEvents(TestCase):
     def test_get_public_events(self):
         """Test if you can view the events publicly."""
         res = self.client.get(
-            '/public_events',
+            '/public-events',
             data=json.dumps(self.event),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -295,7 +295,7 @@ class TestEvents(TestCase):
         """Test if you can get an event by it's Id."""
         registration(self)
         result = self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -321,7 +321,7 @@ class TestEvents(TestCase):
             'location': 'kisumu'
         }
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -340,7 +340,7 @@ class TestEvents(TestCase):
         """Test if you can delete an event."""
         registration(self)
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
@@ -358,7 +358,7 @@ class TestEvents(TestCase):
         """test if the event already deleted is available"""
         registration(self)
         self.client.post(
-            '/create_event',
+            '/create-event',
             data=json.dumps(self.event),
             content_type='application/json',
             headers={
